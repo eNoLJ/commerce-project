@@ -18,6 +18,10 @@ public class Product {
     }
 
     public String printProduct() {
-        return name + " " + price + " " + content;
+        return name + " | " + price + "원 | " + content;
+    }
+
+    public String printDetailProduct() {
+        return name + " | " + price + "원 | " + content + " | 재고: " + quantity;
     }
 }
