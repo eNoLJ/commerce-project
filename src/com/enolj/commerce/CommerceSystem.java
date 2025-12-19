@@ -107,11 +107,11 @@ public class CommerceSystem {
         System.out.println("[ 총 주문 금액 ]");
         System.out.println(totalPrice + "원");
         System.out.println();
-        System.out.println("1. 주문 확정     2. 메인으로 돌아가기");
+        System.out.println("1. 주문 확정    2. 주문 삭제    3. 메인으로 돌아가기");
 
         int num = inputInt(scanner, "");
 
-        if (num != 1 && num != 2) {
+        if (num != 1 && num != 2 && num != 3) {
             System.out.println("올바른 번호를 입력해주세요.");
             return;
         }
@@ -128,6 +128,10 @@ public class CommerceSystem {
 
             Grade grade = Grade.fromNumber(gradeNum);
             confirmOrder(totalPrice, grade);
+        }
+
+        if (num == 2) {
+            removeProductToCart(scanner);
         }
     }
 
@@ -158,6 +162,26 @@ public class CommerceSystem {
         }
 
         cart.clear();
+    }
+
+    private void removeProductToCart(Scanner scanner) {
+        System.out.println();
+        System.out.print("장바구니에서 제거하고 싶은 상품을 입력해주세요: ");
+        scanner.nextLine();
+        String productName = scanner.nextLine();
+        Product targetProduct = null;
+        for (Product product : cart.keySet()) {
+            if (product.getName().equals(productName)) {
+                targetProduct = product;
+            }
+        }
+
+        if (targetProduct == null) {
+            System.out.println("해당 제품이 존재하지 않습니다.");
+        } else {
+            cart.remove(targetProduct);
+            System.out.println("장바구니에서 " + targetProduct.getName() + "(이)가 제거되었습니다.");
+        }
     }
 
     private void handleCancelCart() {
