@@ -4,6 +4,7 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class CommerceSystem {
 
@@ -172,32 +173,74 @@ public class CommerceSystem {
         while (categoryRunning) {
             printCategoryMenu(category);
 
-            int productChoice = inputInt(scanner, "상품 번호를 선택하세요: ");
+            int menuChoice = inputInt(scanner, "메뉴 번호를 선택하세요: ");
 
-            if (productChoice == 0) {
-                categoryRunning = false;
-                continue;
+            switch (menuChoice) {
+                case 0:
+                    categoryRunning = false;
+                    break;
+                case 1:
+                    List<Product> allProducts = category.getProducts();
+                    handleProductList(scanner, "[ 전체 상품 목록 ]", allProducts);
+                    break;
+                case 2:
+                    List<Product> underMillionProducts = category.getProducts().stream()
+                            .filter(product -> product.getPrice() <= 1000000)
+                            .toList();
+                    handleProductList(scanner, "[ 100만원 이하 상품 목록 ]", underMillionProducts);
+                    break;
+                case 3:
+                    List<Product> overMillionProducts = category.getProducts().stream()
+                            .filter(product -> product.getPrice() > 1000000)
+                            .toList();
+                    handleProductList(scanner, "[ 100만원 초과 상품 목록 ]", overMillionProducts);
+                    break;
+                default:
+                    System.out.println("올바른 번호를 입력해주세요.");
+                    break;
             }
-
-            if (productChoice < 0 || productChoice > category.productSize()) {
-                System.out.println("올바른 번호를 입력해주세요.");
-                continue;
-            }
-
-            Product product = category.getProduct(productChoice - 1);
-            handleAddToCart(scanner, product);
-            break;
         }
     }
 
     private void printCategoryMenu(Category category) {
         System.out.println();
         System.out.println("[ " + category.getName() + " 카테고리 ]");
-        for (int i = 0; i < category.productSize(); i++) {
-            Product product = category.getProduct(i);
-            System.out.println(i + 1 + ". " + product.printDetailInfo());
-        }
+        System.out.println("1. 전체 상품 보기");
+        System.out.println("2. 가격대별 필터링 (100만원 이하)");
+        System.out.println("3. 가격대별 필터링 (100만원 초과)");
         System.out.println("0. 뒤로가기");
+    }
+
+    private void handleProductList(Scanner scanner, String title, List<Product> products) {
+        if (products.isEmpty()) {
+            System.out.println();
+            System.out.println("조건에 맞는 상품이 없습니다.");
+            return;
+        }
+
+        boolean running = true;
+
+        while (running) {
+            System.out.println();
+            System.out.println(title);
+
+            for (int i = 0; i < products.size(); i++) {
+                System.out.println((i + 1) + ". "  + products.get(i).printDetailInfo());
+            }
+            System.out.println("0. 뒤로가기");
+
+            int choice = inputInt(scanner, "상품 번호를 선택하세요: ");
+
+            if (choice == 0) {
+                running = false;
+            } else if (choice > 0 && choice <= products.size()) {
+                Product product = products.get(choice - 1);
+                handleAddToCart(scanner, product);
+                running = false;
+            } else {
+                System.out.println("올바른 번호를 입력해주세요.");
+            }
+        }
     }
 
     private void handleAddToCart(Scanner scanner, Product product) {
@@ -267,11 +310,6 @@ public class CommerceSystem {
 
                 int choice = inputInt(scanner, "");
 
-                if (choice < 0 || choice > 5) {
-                    System.out.println("올바른 번호를 입력해주세요.");
-                    continue;
-                }
-
                 switch (choice) {
                     case 1:
                         Category category = selectCategory(scanner);
@@ -291,6 +329,9 @@ public class CommerceSystem {
                         break;
                     case 5:
                         running = false;
+                        break;
+                    default:
+                        System.out.println("올바른 번호를 입력해주세요.");
                         break;
                 }
             } else {
@@ -340,7 +381,7 @@ public class CommerceSystem {
 
         System.out.println();
         System.out.println(productName + " | " + price + "원 | " + productContent + " | 재고: " + quantity + "개");
-        System.out.println("위 정보로 상을 추가하시겠습니까?");
+        System.out.println("위 정보로 상품을 추가하시겠습니까?");
         System.out.println("1. 확인    2. 취소");
 
         int num = inputInt(scanner, "");
@@ -369,11 +410,6 @@ public class CommerceSystem {
 
         int choice = inputInt(scanner, "");
 
-        if (choice < 0 || choice > 3) {
-            System.out.println("올바른 번호를 입력해주세요.");
-            return;
-        }
-
         switch (choice) {
             case 1:
                 editPriceToProduct(scanner, product);
@@ -383,6 +419,9 @@ public class CommerceSystem {
                 break;
             case 3:
                 editQuantityToProduct(scanner, product);
+                break;
+            default:
+                System.out.println("올바른 번호를 입력해주세요.");
                 break;
         }
     }
@@ -476,9 +515,8 @@ public class CommerceSystem {
         System.out.println("[ 모든 제품 현황 ]");
         System.out.println();
         for (Category category : categories) {
-            for (Product product : category.getProducts()) {
-                System.out.println(product.printDetailInfo());
-            }
+            category.getProducts()
+                    .forEach(product -> System.out.println(product.printDetailInfo()));
         }
     }
 
