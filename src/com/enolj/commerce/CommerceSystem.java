@@ -112,16 +112,41 @@ public class CommerceSystem {
 
         if (num != 1 && num != 2) {
             System.out.println("올바른 번호를 입력해주세요.");
+            return;
         }
 
         if (num == 1) {
-            confirmOrder(totalPrice);
+            printGradeMenu();
+
+            int gradeNum = inputInt(scanner, "");
+
+            if (gradeNum < 0 || gradeNum > 4) {
+                System.out.println("올바른 번호를 입력해주세요.");
+                return;
+            }
+
+            Grade grade = Grade.fromNumber(gradeNum);
+            confirmOrder(totalPrice, grade);
         }
     }
 
-    private void confirmOrder(int totalPrice) {
+    private void printGradeMenu() {
         System.out.println();
-        System.out.println("주문이 완료되었습니다! 총 금액: " + totalPrice + "원");
+        System.out.println("고객 등급을 입력해주세요.");
+        System.out.println("1. "+ Grade.BRONZE + " : "+ Grade.BRONZE.getDiscountRate() + "% 할인");
+        System.out.println("2. "+ Grade.SILVER + " : "+ Grade.SILVER.getDiscountRate() + "% 할인");
+        System.out.println("3. "+ Grade.GOLD + " : "+ Grade.GOLD.getDiscountRate() + "% 할인");
+        System.out.println("4. "+ Grade.PLATINUM + " : "+ Grade.PLATINUM.getDiscountRate() + "% 할인");
+    }
+
+    private void confirmOrder(int totalPrice,  Grade grade) {
+        int discountPrice = totalPrice * grade.getDiscountRate() / 100;
+
+        System.out.println();
+        System.out.println("주문이 완료되었습니다!");
+        System.out.println("할인 전 금액: " + totalPrice);
+        System.out.println(grade.name() + " 등급 할인(" + grade.getDiscountRate() + "%): -" + discountPrice);
+        System.out.println("최종 결제 금액: " + (totalPrice - discountPrice));
 
         for (Product product : cart.keySet()) {
             int quantity = cart.get(product);
