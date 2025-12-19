@@ -7,6 +7,8 @@ import java.util.Scanner;
 
 public class CommerceSystem {
 
+    public static final String PASSWORD = "123";
+
     private List<Customer> customers;
 
     private List<Category> categories;
@@ -35,7 +37,7 @@ public class CommerceSystem {
             }
 
             if (categoryChoice < 0 || categoryChoice > categories.size()) {
-                handleCartChoice(scanner, categoryChoice);
+                handleETCChoice(scanner, categoryChoice);
                 continue;
             }
 
@@ -49,7 +51,7 @@ public class CommerceSystem {
     private void printMainMenu() {
         System.out.println();
         System.out.println("[ 실시간 커머스 플랫폼 메인 ]");
-        for (int i = 0; i< categories.size(); i++) {
+        for (int i = 0; i < categories.size(); i++) {
             System.out.println(i + 1 + ". " + categories.get(i).getName());
         }
         System.out.println("0. 종료");
@@ -57,26 +59,29 @@ public class CommerceSystem {
         if (!cart.isEmpty()) {
             printCartMenu();
         }
+
+        System.out.println(categories.size() + 3 + ". 관리자 모드");
     }
 
     private void printCartMenu() {
         System.out.println();
         System.out.println("[ 주문 관리 ]");
-        System.out.println("4. 장바구니 확인    | 장바구니를 확인 후 주문합니다.");
-        System.out.println("5. 주문 취소       | 진행중인 주문을 취소합니다.");
+        System.out.println(categories.size() + 1 + ". 장바구니 확인    | 장바구니를 확인 후 주문합니다.");
+        System.out.println(categories.size() + 2 + ". 주문 취소       | 진행중인 주문을 취소합니다.");
     }
-
 
 //     카테고리 범위 밖의 숫자를 입력했을 때 처리
 //     - 4: 장바구니 확인/주문
 //     - 5: 주문 취소
 //     - 그 외: 잘못된 번호
 
-    private void handleCartChoice(Scanner scanner, int categoryChoice) {
-        if (!cart.isEmpty() && categoryChoice == 4) {
+    private void handleETCChoice(Scanner scanner, int categoryChoice) {
+        if (!cart.isEmpty() && categoryChoice == categories.size() + 1) {
             handleCartCheckAndOrder(scanner);
-        } else if (!cart.isEmpty() && categoryChoice == 5) {
+        } else if (!cart.isEmpty() && categoryChoice == categories.size() + 2) {
             handleCancelCart();
+        } else if (categoryChoice == categories.size() + 3) {
+            handleManagerMode(scanner);
         } else {
             System.out.println("올바른 번호를 입력해주세요.");
         }
@@ -156,7 +161,6 @@ public class CommerceSystem {
 
             Product product = category.getProduct(productChoice - 1);
             handleAddToCart(scanner, product);
-            // 상품 처리 후 메인으로 돌아가는 기존 로직 유지 (break)
             break;
         }
     }
@@ -210,6 +214,249 @@ public class CommerceSystem {
         }
     }
 
+    // ===================== 관리자 모드 =====================
+
+    private void handleManagerMode(Scanner scanner) {
+        int count = 0;
+        boolean running = true;
+        boolean login = false;
+
+        while (running) {
+            System.out.println();
+            String password = "";
+
+            if (!login) {
+                password = inputPassword(scanner, "관리자 비밀번호를 입력해 주세요:");
+            } else {
+                password = PASSWORD;
+            }
+
+            if (count == 2) {
+                System.out.println("비밀번호 3회 오류입니다. 메인화면으로 돌아갑니다.");
+                break;
+            }
+
+            if (password.equals(PASSWORD)) {
+                login = true;
+                printManagerMenu();
+
+                int choice = inputInt(scanner, "");
+
+                if (choice < 0 || choice > 5) {
+                    System.out.println("올바른 번호를 입력해주세요.");
+                    continue;
+                }
+
+                switch (choice) {
+                    case 1:
+                        Category category = selectCategory(scanner);
+                        if(category == null) {
+                            break;
+                        }
+                        addProductToCategory(scanner, category);
+                        break;
+                    case 2:
+                        editProduct(scanner);
+                        break;
+                    case 3:
+                        removeProduct(scanner);
+                        break;
+                    case 4:
+                        showAllProduct();
+                        break;
+                    case 5:
+                        running = false;
+                        break;
+                }
+            } else {
+                count++;
+            }
+
+        }
+    }
+
+    private void printManagerMenu() {
+        System.out.println();
+        System.out.println("[ 관리자 모드 ]");
+        System.out.println("1. 상품 추가");
+        System.out.println("2. 상품 수정");
+        System.out.println("3. 상품 삭제");
+        System.out.println("4. 전체 상품 현황");
+        System.out.println("5. 메인으로 돌아가기");
+    }
+
+    private Category selectCategory(Scanner scanner) {
+        System.out.println();
+        System.out.println("어느 카테고리에 상품을 추가하시겠습니까?");
+        for (int i = 0; i < categories.size(); i++) {
+            System.out.println(i + 1 + ". " + categories.get(i).getName());
+        }
+        int categoryChoice = inputInt(scanner, "");
+
+        if (categoryChoice < 0 || categoryChoice > categories.size()) {
+            System.out.println("올바른 번호를 입력해주세요.");
+            return null;
+        }
+
+        return categories.get(categoryChoice - 1);
+    }
+
+    private void addProductToCategory(Scanner scanner, Category category) {
+        System.out.println();
+        System.out.println("[ " + category.getName() + " 카테고리에 상품 추가 ]");
+        System.out.print("상품명을 입력해주세요: ");
+        scanner.nextLine();
+        String productName = scanner.nextLine();
+        int price = inputInt(scanner, "가격을 입력해주세요: ");
+        System.out.print("상품 설명을 입력해주세요: ");
+        scanner.nextLine();
+        String productContent = scanner.nextLine();
+        int quantity = inputInt(scanner, "재고 수량을 입력해주세요: ");
+
+        System.out.println();
+        System.out.println(productName + " | " + price + "원 | " + productContent + " | 재고: " + quantity + "개");
+        System.out.println("위 정보로 상을 추가하시겠습니까?");
+        System.out.println("1. 확인    2. 취소");
+
+        int num = inputInt(scanner, "");
+
+        if (num != 1 && num != 2) {
+            System.out.println("올바른 숫자를 입력해주세요.");
+        }
+
+        if (num == 1) {
+            Product product = new Product(productName, price, productContent, quantity);
+            category.addProduct(product);
+            System.out.println();
+            System.out.println("상품이 성공적으로 추가되었습니다!");
+        }
+    }
+
+    private void editProduct(Scanner scanner) {
+        Product product = getProductToEdit(scanner);
+
+        if (product == null) {
+            System.out.println("해당 상품이 없습니다.");
+            return;
+        }
+
+        printEditItem();
+
+        int choice = inputInt(scanner, "");
+
+        if (choice < 0 || choice > 3) {
+            System.out.println("올바른 번호를 입력해주세요.");
+            return;
+        }
+
+        switch (choice) {
+            case 1:
+                editPriceToProduct(scanner, product);
+                break;
+            case 2:
+                editContentToProduct(scanner, product);
+                break;
+            case 3:
+                editQuantityToProduct(scanner, product);
+                break;
+        }
+    }
+
+    private Product getProductToEdit(Scanner scanner) {
+        System.out.println();
+        System.out.print("수정할 상품명을 입력해주세요: ");
+        scanner.nextLine();
+        String productName = scanner.nextLine();
+
+        Product product = null;
+        for (Category category : categories) {
+            for (Product targetProduct : category.getProducts()) {
+                if (targetProduct.getName().equals(productName)) {
+                    product = targetProduct;
+                }
+            }
+        }
+
+        return product;
+    }
+
+    private void printEditItem() {
+        System.out.println();
+        System.out.println("수정할 항목을 선택해주세요.");
+        System.out.println("1. 가격");
+        System.out.println("2. 설명");
+        System.out.println("3. 재고수량");
+    }
+
+    private void editPriceToProduct(Scanner scanner, Product product) {
+        System.out.println();
+        int currentPrice = product.getPrice();
+        System.out.println("현재 가격: " + currentPrice + "원");
+        int newPrice = inputInt(scanner, "새로운 가격을 입력해주세요: ");
+        product.setPrice(newPrice);
+        System.out.println();
+        System.out.println(product.getName() + "의 가격이 " + currentPrice + "원 -> " + newPrice + "원으로 수정되었습니다.");
+    }
+
+    private void editContentToProduct(Scanner scanner, Product product) {
+        System.out.println();
+        String currentContent = product.getContent();
+        System.out.println("현재 설명: " + currentContent);
+        System.out.print("새로운 설명을 입력해주세요: ");
+        scanner.nextLine();
+        String newContent = scanner.nextLine();
+        product.setContent(newContent);
+        System.out.println(product.getName() + "의 설명이 " + currentContent + " -> " + newContent + "(으)로 수정되었습니다.");
+    }
+
+    private void editQuantityToProduct(Scanner scanner, Product product) {
+        System.out.println();
+        int currentQuantity = product.getQuantity();
+        System.out.println("현재 수량: " + currentQuantity + "개");
+        int newQuantity = inputInt(scanner, "새로운 수량을 입력해주세요: ");
+        product.setQuantity(newQuantity);
+        System.out.println();
+        System.out.println(product.getName() + "의 재고수량이 " + currentQuantity + "개 -> " + newQuantity + "개로 수정되었습니다.");
+    }
+
+    private void removeProduct(Scanner scanner) {
+        System.out.println();
+        System.out.print("삭제할 상품명을 입력해주세요: ");
+        scanner.nextLine();
+        String productName = scanner.nextLine();
+
+        boolean isRemoved = false;
+        Category category = null;
+        Product product = null;
+        for (Category targetCategory : categories) {
+            for (Product targetProduct : targetCategory.getProducts()) {
+                if (targetProduct.getName().equals(productName)) {
+                    category = targetCategory;
+                    product = targetProduct;
+                    isRemoved = true;
+                }
+            }
+        }
+
+        if (isRemoved) {
+            category.removeProduct(product);
+            System.out.println(product.getName() + " 제품이 성공적으로 삭제 되었습니다.");
+        } else {
+            System.out.println("해당 상품이 존재하지 않습니다.");
+        }
+    }
+
+    private void showAllProduct() {
+        System.out.println();
+        System.out.println("[ 모든 제품 현황 ]");
+        System.out.println();
+        for (Category category : categories) {
+            for (Product product : category.getProducts()) {
+                System.out.println(product.printDetailInfo());
+            }
+        }
+    }
+
     // ===================== 유틸 =====================
 
     private int inputInt(Scanner scanner, String message) {
@@ -223,4 +470,16 @@ public class CommerceSystem {
             }
         }
     }
- }
+
+    private String inputPassword(Scanner scanner, String message) {
+        while (true) {
+            System.out.println(message);
+            try {
+                return scanner.next();
+            } catch (InputMismatchException e) {
+                System.out.println("비밀번호를 입력해주세요.");
+                scanner.nextLine();
+            }
+        }
+    }
+}

@@ -13,6 +13,10 @@ public class Category {
         this.products = products;
     }
 
+    public void addProduct(Product product) {
+        products.add(product);
+    }
+
     public int productSize() {
         return products.size();
     }
@@ -23,5 +27,13 @@ public class Category {
 
     public String getName() {
         return name;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void removeProduct(Product product) {
+        products.remove(product);
     }
 }
