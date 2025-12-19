@@ -180,7 +180,7 @@ public class CommerceSystem {
             System.out.println("해당 제품이 존재하지 않습니다.");
         } else {
             cart.remove(targetProduct);
-            System.out.println("장바구니에서 " + targetProduct.getName() + "(이)가 제거되었습니다.");
+            System.out.println("장바구니에서 " + targetProduct.getName() + " 제품이 제거되었습니다.");
         }
     }
 
@@ -296,13 +296,13 @@ public class CommerceSystem {
             int current = cart.get(product);
             if (current < product.getQuantity()) {
                 cart.compute(product, (k, v) -> v + 1);
-                System.out.println(product.getName() + "(이)가 장바구니에 추가 되었습니다.");
+                System.out.println(product.getName() + " 제품이 장바구니에 추가 되었습니다.");
             } else {
                 System.out.println("재고가 부족합니다.");
             }
         } else {
             cart.put(product, 1);
-            System.out.println(product.getName() + "(이)가 장바구니에 추가 되었습니다.");
+            System.out.println(product.getName() + " 제품이 장바구니에 추가 되었습니다.");
         }
     }
 
