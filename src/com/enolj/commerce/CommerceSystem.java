@@ -4,7 +4,6 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class CommerceSystem {
 
@@ -397,6 +396,12 @@ public class CommerceSystem {
         System.out.print("상품명을 입력해주세요: ");
         scanner.nextLine();
         String productName = scanner.nextLine();
+        try {
+            validateProductName(productName);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            return;
+        }
         int price = inputInt(scanner, "가격을 입력해주세요: ");
         System.out.print("상품 설명을 입력해주세요: ");
         scanner.nextLine();
@@ -419,6 +424,16 @@ public class CommerceSystem {
             category.addProduct(product);
             System.out.println();
             System.out.println("상품이 성공적으로 추가되었습니다!");
+        }
+    }
+
+    private void validateProductName(String productName) {
+        for (Category category : categories) {
+            for (Product product : category.getProducts()) {
+                if (product.getName().equals(productName)) {
+                    throw new IllegalArgumentException("중복된 상품명입니다.");
+                }
+            }
         }
     }
 
